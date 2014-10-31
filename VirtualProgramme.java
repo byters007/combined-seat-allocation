@@ -1,6 +1,18 @@
 import java.util.*;
 import java.io.*;
 
+/**
+* <h2>Virtual Programme for a Program</h2>
+* This class is a virtual program for a particular category of an institute program i.e contains quota of that category.<p>
+* For GaleShapley:<br>
+* The program contains {@link #receiveApplication(Candidate,HashMap)} method for recieving application<br>
+* and two methods {@link #filter(HashMap)} and {@link #fFilter(HashMap)} for filtering the candidates who applied<br>
+* in normal and F case respectively.<p>
+* For MeritOrder:<br>
+* The program contains two methods {@link #checkApplication(Candidate)} and {@link #checkFApplication(Candidate)} for selecting the candidate who applied<br>
+* in normal and F case respectively.
+* It also have {@link #dereserveSeats(ArrayList)} method for dereserving seats after Phase-I.
+*/
 public class VirtualProgramme  
 {
 	private String programID;
@@ -16,7 +28,10 @@ public class VirtualProgramme
 	private ArrayList<Candidate> tempList;
 	private MeritList_task1 meritList;
 
-
+	/**
+	* This is a copy constructor
+	* @param prog Program to be copied
+	*/
 	public VirtualProgramme(VirtualProgramme prog) {
 		programID = prog.programID ;
 		instiID = prog.instiID;
@@ -32,6 +47,15 @@ public class VirtualProgramme
 		meritList = new MeritList_task1(prog.meritList) ;
 	}
 
+	/**
+	* This is a constructor for GaleShapley class as it requires meritlist in it
+	* @param category_ category of program
+	* @param pdStatus_ PD Status of program
+	* @param quota_ Total seats in program
+	* @param recievedList An array of all the 8 meritlists (But we store only the relevent)
+	* @param programID_ ID of program
+	* @param instiID_ ID of the institute that provides this program
+	*/
 	public VirtualProgramme(String category_ , Boolean pdStatus_ , int quota_, MeritList_task1[] recievedList, String programID_, String instiID_)
 	{
 		category = category_;
@@ -90,6 +114,14 @@ public class VirtualProgramme
 		seatsFilled = 0 ;
 	}
 
+	/**
+	* This is a constructor for MeritOrder class as it do not require meritlist in it
+	* @param category_ category of program
+	* @param pdStatus_ PD Status of program
+	* @param quota_ Total seats in program
+	* @param programID_ ID of program
+	* @param instiID_ ID of the institute that provides this program
+	*/
 	public VirtualProgramme(String category_ , Boolean pdStatus_ , int quota_, String programID_, String instiID_)
 	{
 		category = category_;
@@ -160,8 +192,24 @@ public class VirtualProgramme
 	public int getMeritListIndex(){
 		return meritListIndex;
 	}
+	public int getSeatsFilled(){
+		return seatsFilled;
+	}
+	public int getQuota(){
+		return quota;
+	}
+	public void setQuota(int x){
+		quota=x;
+	}
 
 	/** @debug: maybe you can pass tempId(string) ,instead of Candidate*/
+	/**
+	* Receives application of the candidate and check if he can apply for the program.(for GaleShapley)<br>
+	* If he can't, he is added to the rejectionList (its a hashmap)
+	* @param newCandidate Candidate which applied
+	* @param rejectionList Common rejection list for all programs
+	* @see MeritList_task1#getRank(String)
+	*/
 	public void receiveApplication(Candidate newCandidate, HashMap<String , Candidate> rejectionList)	
 	{	//check if the candidate is present in the merit list, which is available in gale-shapley class.
 		if(meritList.getRank(newCandidate.getUniqueID())!=-1)
@@ -172,33 +220,20 @@ public class VirtualProgramme
 		{
 			rejectionList.put(newCandidate.getUniqueID(), newCandidate);	//otherwise add the candidate to the rejection list for that iteration of the gale sharpley algorithm.
 		}
-		//newCandidate.setAppliedUpto(5);
-
 	}
-	//We can implement treeMap too
-	/*public void SelectionSort ( ArrayList<Candidate> num)
-	{
-	     int i, j, first;
-	     for (i = num.size() - 1; i >= 0; i--)  
-	     { 
-	          first = 0;   //initialize to subscript of first element
-	          for(j = 0; j <= i; j++)   //locate smallest element between positions 0 and i.
-	          {
-	               if( meritList.compareRank(num.get(j), num.get(first),meritListIndex) == 1 )         	//here write the actual name of the hashmap, rank is the 
-	                 first = j;
-	          }
-	          Candidate temp = new Candidate(num.get(first));   //swap smallest found with element in position i.
-	          num.set(first,num.get(i)) ;
-	          num.set(i,temp); 
-	      }
-	}*/
 
+	//Idea::We can Implement treemap too
+	/**
+	* Uses modified built-in sort method to arrange list of candidates in increasing order of rank
+	* @param rankList List to be sorted
+	* @see MeritList_task1#compareRank(Candidate,Candidate,int)
+	*/
 	public void sortList(ArrayList<Candidate> rankList){
 		Collections.sort(rankList, new Comparator<Candidate>() {
 	        @Override
 	        public int compare(Candidate candidate1, Candidate candidate2)
 	        {
-	        	if(meritList.compareRank(candidate1, candidate2, meritListIndex) == 1)
+	        	if(meritList.compareRank(candidate1, candidate2, meritListIndex) == 0)
 	        		return -1;
 	        	else
 	        		return 1;
@@ -206,6 +241,11 @@ public class VirtualProgramme
     	});
 	}
 
+	/**
+	* Filters application provided according to qouta and meritlist and rejected candidates added to rejectionlist.(for GaleShapley)
+	* @param rejectionList Common rejection list for all programs
+	* @see #sortList(ArrayList)
+	*/
 	public HashMap<String , Candidate> filter(HashMap<String , Candidate> rejectionList)
 	{
 		sortList(tempList) ;
@@ -236,6 +276,11 @@ public class VirtualProgramme
 		return rejectionList;
 	}
 
+	/**
+	* Filters application provided by F candidates according to qouta and meritlist and rejected candidates added to rejectionlist.(for GaleShapley)
+	* @param rejectionList Common rejection list for all programs
+	* @see #sortList(ArrayList)
+	*/
 	public HashMap<String , Candidate> fFilter(HashMap<String , Candidate> rejectionList)
 	{
 		sortList(tempList) ;
@@ -266,14 +311,15 @@ public class VirtualProgramme
 		return rejectionList;
 	}
 
-	public void print_program() {
-		System.out.println(programID + " " + quota + " " + category) ;
-	}
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/**********************************************************Functions for MeritOrder(Specific)******************************************************************/
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
+	/**
+	* Checks if the applicant gets selected or not provided he is elligible and seat is present.(for MeritOrder)
+	* @param candidate
+	* @return Boolean <code>true</code> if waitlisted else <code>false</code>
+	*/
 	public Boolean checkApplication(Candidate candidate){
 		if(quota>0 && candidate.getRank(meritListIndex)>0){
 			if(seatsFilled<quota){
@@ -293,34 +339,56 @@ public class VirtualProgramme
 			return false;
 	}
 
+	/**
+	* Checks if the F-applicant gets selected or not provided he is elligible and seat is present.(for MeritOrder)
+	* @param candidate
+	* @return Boolean <code>true</code> if waitlisted else <code>false</code>
+	*/
 	public Boolean checkFApplication(Candidate candidate){
-		if(waitList.get(waitList.size()-1).getRank(meritListIndex)>=candidate.getRank(meritListIndex)){
-			waitList.add(candidate);
-			seatsFilled++;
-			return true;
+		if(quota>0 && candidate.getRank(meritListIndex)>0){
+			if(seatsFilled<quota){
+				waitList.add(candidate);
+				seatsFilled++;
+				return true;
+			}
+			else if(waitList.get(waitList.size()-1).getRank(meritListIndex)>=candidate.getRank(meritListIndex)){
+				waitList.add(candidate);
+				seatsFilled++;
+				return true;
+			}
+			else
+				return false;
 		}
 		else
 			return false;
 	}
-
-	public void setQuota(int x){
-		quota=x;
-	}
-
+	/**
+	* Gives the seats remaining vacant for de-reservation and reduces the qouta
+	* @return int no. of seats vacant
+	*/
 	public int getDiff(){
 		if(seatsFilled<quota){
+			int temp = quota - seatsFilled;
 			setQuota(seatsFilled);
-			return quota - seatsFilled;
+			return temp;
 		}
 		else
 			return 0;
 	}
 
+	/**
+	* Dereserves seat if possible for GE, SC or ST whatever the case
+	* @param progList A list of all category programs for this program
+	* @see #getDiff()
+	*/
 	public void dereserveSeats(ArrayList<VirtualProgramme> progList){
 		int vacancy=0;
-		for(int i=1;i<progList.size();i++){
-			vacancy += progList.get(i).getDiff();
-		}
+		if(meritListIndex==0)
+			vacancy = progList.get(1).getDiff() + progList.get(4).getDiff() + progList.get(5).getDiff();
+		if(meritListIndex==2)
+			vacancy = progList.get(6).getDiff();
+		if(meritListIndex==3)
+			vacancy = progList.get(7).getDiff();
 		//there is one doubt, should it be
 		//setQuota(quota+vacancy);
 		setQuota(seatsFilled+vacancy);

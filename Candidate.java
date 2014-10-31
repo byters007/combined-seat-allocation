@@ -1,6 +1,12 @@
 import java.io.*;
 import java.util.*;
-
+/**
+* <h2>Structure for Candidate</h2>
+*
+* Contains information for each candidate along with their preference list.<p>
+* This has two separate methods for adding preference for both the tasks:<br>
+* {@link #addPreference_task1(ArrayList)} method and {@link #addPreference_task2(ArrayList)} method
+*/
 public class Candidate{
 	
 	//Personal Information
@@ -19,45 +25,37 @@ public class Candidate{
 	private boolean isWaitListed;
 	private VirtualProgramme waitListedFor; 
 	//Functions to manipulate data members
+	
 	public String getUniqueID(){
 		return uniqueID;
 	}
-
 	public String getCategory(){
 		return category;
 	}
-
 	public void setCategory(String x){
 		category=x;
 	}
-
 	public boolean getPDStatus(){
 		return pdStatus;
 	}
-
 	public boolean getDSStatus(){
 		return dsStatus;
 	}
 	public void setDSStatus(boolean x){
 		dsStatus=x;
 	}
-
 	public boolean getNationality(){
 		return nationality;
 	}
-
 	public int getAppliedUpto(){
 		return appliedUpto;
 	}
-
 	public void setAppliedUpto(int x){
 		appliedUpto = x;
 	}
-
 	public VirtualProgramme getWaitListedFor(){
 		return waitListedFor;
 	}
-
 	public void setWaitListedFor(VirtualProgramme x){
 		waitListedFor = x;
 	}
@@ -65,26 +63,39 @@ public class Candidate{
 	public VirtualProgramme getChoice(int i){
 		return preferenceList.get(i);
 	}
-
 	public VirtualProgramme getDSChoice(int i){
 		return dsPreferenceList.get(i);
 	}
-
 	public VirtualProgramme getFChoice(int i){
 		return fPreferenceList.get(i);
-	}	
+	}
 
+	/** 
+	* Adds all the 8 category ranks
+	* @param x Array of category ranks
+	*/
 	public void addRank(int[] x){
 		for(int i=0;i<8;i++){
 			rank[i]=x[i];
 		}
 	}
-
 	public int getRank(int index){
 		return rank[index];
 	}
 
 	//Constructor
+
+	/**
+	* This is the constructor for the class.<br>
+	* It also initialises all the lists of program choices.
+	* @param uniqueID Candidates ID
+	* @param category Candidates category
+	* @param pdStatus Candidates PD Status
+	* @param dsStatus Candidates DS Status
+	* @param nationality <code>true</code> if Indian else <code>false</code>
+	*/
+
+
 	public Candidate(String uniqueID, String category, boolean pdStatus, boolean dsStatus, boolean nationality){
 		this.uniqueID=uniqueID;
 		this.category=category;
@@ -100,6 +111,11 @@ public class Candidate{
 	}
 
 	//Copy Constructor
+
+	/**
+	* This is the copy constructor
+	* @param x The candidate to be copied.
+	*/
 	public Candidate(Candidate x){
 		uniqueID=x.uniqueID;
 		category=x.category;
@@ -117,6 +133,12 @@ public class Candidate{
 	}
 
 	//Function for adding preferences to the preference list
+
+	/**
+	* Adds program choices provided into a list with some minor changes required for GaleShapley(task1)<p>
+	* Takes care of de-reservation, DS-list, F-list and de-reservation for F.
+	* @param choice An ArrayList of a single VirtualProgramme for all the 8 categories
+	*/
 	public void addPreference_task1(ArrayList<VirtualProgramme> choice) {
 		if(category.equals("GE")) { 
 			if(!pdStatus){
@@ -201,26 +223,52 @@ public class Candidate{
 		}
 	}
 
+	/**
+	* Gives program to which the Candidate applies
+	* @return VirtualProgramme
+	*/
 	public VirtualProgramme currentVirtualProgramme(){
 		return preferenceList.get(appliedUpto);
 	}
 
+	/**
+	* Gives program to which the DS Candidate applies
+	* @return VirtualProgramme
+	*/
 	public VirtualProgramme currentDSVirtualProgramme(){
 		return dsPreferenceList.get(appliedUpto);
 	}
 
+	/**
+	* Gives program to which the F Candidate applies
+	* @return VirtualProgramme
+	*/
 	public VirtualProgramme currentFVirtualProgramme(){
 		return fPreferenceList.get(appliedUpto);
 	}
 
+	/**
+	* Gives whether Candidate is waiting for some program or rejected
+	* @return boolean
+	*/
 	public boolean isWaitListedFor(){
 		return isWaitListed;
 	}
 
+	/**
+	* Sets whether Candidate is waiting for some program or rejected
+	* @param p Required waiting status
+	*/
 	public void setWaitListedForBool(boolean p){
 		isWaitListed=p;
 	}
 	//Function for finding the next Virtual Programme
+
+	/**
+	* Sets the pointer(index) to the next program in the preference list if present else to -1<br> 
+	* It also changes the program its waiting for
+	* @see #setWaitListedFor(VirtualProgramme)
+	*/
 	public void nextVirtualProgramme(){
 		appliedUpto++;												/** @note to Pranjal: Maybe you should call the function "setWaitListedFor( preferenceList.get(appliedUpto))"
 													so that when this function is called from galeShapley class, the current waitListed Programme also gets updated automatically*/
@@ -230,11 +278,14 @@ public class Candidate{
 		}															//programme knows we are waitlisted or rejected
 		//Reappear for JEE
 		if(appliedUpto==preferenceList.size()){
-			//System.out.println("Yes");
 			appliedUpto=-1; //-1 means reappear next year
 		}
 	}
 
+	/**
+	* Sets the pointer(index) to the next program in the DS-preference list if present else to -1<br> 
+	* It also changes the program its waiting for
+	*/
 	public void nextDSVirtualProgramme(){
 		appliedUpto++;												/** @note to Pranjal: Maybe you should call the function "setWaitListedFor( preferenceList.get(appliedUpto))"
 													so that when this function is called from galeShapley class, the current waitListed Programme also gets updated automatically*/
@@ -244,11 +295,14 @@ public class Candidate{
 		}															//programme knows we are waitlisted or rejected
 		//Reappear for JEE
 		if(appliedUpto==dsPreferenceList.size()){
-			//System.out.println("Yes");
 			appliedUpto=-1; //-1 means reappear next year
 		}
 	}
 	
+	/**
+	* Sets the pointer(index) to the next program in the F-preference list if present else to -1<br> 
+	* It also changes the program its waiting for
+	*/
 	public void nextFVirtualProgramme(){
 		appliedUpto++;												/** @note to Pranjal: Maybe you should call the function "setWaitListedFor( preferenceList.get(appliedUpto))"
 													so that when this function is called from galeShapley class, the current waitListed Programme also gets updated automatically*/
@@ -258,14 +312,8 @@ public class Candidate{
 		}															//programme knows we are waitlisted or rejected
 		//Reappear for JEE
 		if(appliedUpto==fPreferenceList.size()){
-			//System.out.println("Yes");
 			appliedUpto=-1; //-1 means reappear next year
 		}
-	}
-	
-	void print_preference() {
-		for(int i = 0 ; i < preferenceList.size() ; i++)
-			System.out.println(preferenceList.get(i).getProgramID() + " , " + preferenceList.get(i).getCategory()) ;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,6 +322,12 @@ public class Candidate{
 		
 
 	//Function for adding preferences to the preference list
+
+	/**
+	* Adds program choices provided into a list with some minor changes required for MeritOrder(task2)<p>
+	* Do not take care of de-reservation but splits the program for non-GE categories.
+	* @param choice An ArrayList of a single VirtualProgramme for all the 8 categories
+	*/
 	public void addPreference_task2(ArrayList<VirtualProgramme> choice) {
 		if(category.equals("GE")) { 
 			if(!pdStatus){
@@ -291,8 +345,8 @@ public class Candidate{
 			}
 			else{
 				preferenceList.add(choice.get(0));
-				preferenceList.add(choice.get(4));
 				preferenceList.add(choice.get(1));
+				preferenceList.add(choice.get(4));
 				preferenceList.add(choice.get(5));
 			}
 		}

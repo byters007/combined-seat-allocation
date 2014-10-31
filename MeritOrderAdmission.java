@@ -1,10 +1,14 @@
 import java.io.*;
 import java.util.*;
 
-class MeritOrderAdmission{
+/**
+* <h1>MeritOrderAdmission Algorithm</h1>
+* This class contains various hashmaps and arraylists for storing data.<br>
+* It contains {@link #checkDSApplication(String,Candidate)} method for checking if a DS candidate gets an institute seat or not.<br>
+* It also contains {@link #startAlgorithm()} method for starting the whole algorithm(visit the method for algo details).
+*/
+public class MeritOrderAdmission{
 	private Map<String,Candidate> candidateMap = new HashMap<String,Candidate>();
-	//private Map<String,Candidate> dsCandidateMap = new HashMap<String,Candidate>();
-	//private Map<String,Candidate> fCandidateMap = new HashMap<String,Candidate>();
 	private ArrayList<String> orderedCandidate = new ArrayList<String>();
 	private Map<String , ArrayList<VirtualProgramme> > programMap = new HashMap<String , ArrayList<VirtualProgramme> >();						//the program map contains the program code as the key and the arrayList of virtual program as its key value
 	private Map<String , Integer > instiSeats = new HashMap<String , Integer >();
@@ -26,6 +30,9 @@ class MeritOrderAdmission{
 	boolean booleanTempDSStatus;
 	boolean booleanTempNationality;
 
+	/**
+	* This is the constructor which initializes empty meritlists
+	*/
 	public MeritOrderAdmission(){
 		commonMeritList = new MeritList_task2();
 		for(int i=0;i<8;i++){
@@ -35,14 +42,27 @@ class MeritOrderAdmission{
 		fMeritList = new MeritList_task2(0);
 	}
 	
+	/**
+	* Prints the final result in a file output_task2.csv and also catches IOException inside.<br>
+	* <pre><code>
+	* PrintWriter writer = new PrintWriter("output_task2.csv", "UTF-8");
+	* </code></pre>
+	* @see IOException
+	*/
 	public void printResult(){
-		for (int i=0;i<orderedCandidate.size();i++){
-			if(candidateMap.get(orderedCandidate.get(i)).isWaitListedFor()){
-				System.out.println(orderedCandidate.get(i) + "," + candidateMap.get(orderedCandidate.get(i)).getWaitListedFor().getProgramID() + "," + candidateMap.get(orderedCandidate.get(i)).getWaitListedFor().getCategory() ); /** @debug : Proper Syntax*/
+		try{
+			PrintWriter writer = new PrintWriter("output_task2.csv", "UTF-8");
+			for (int i=0;i<orderedCandidate.size();i++){
+				if(candidateMap.get(orderedCandidate.get(i)).isWaitListedFor()){
+					writer.println(orderedCandidate.get(i) + "," + candidateMap.get(orderedCandidate.get(i)).getWaitListedFor().getProgramID() + "," + candidateMap.get(orderedCandidate.get(i)).getWaitListedFor().getCategory() );
+				}
+				else{
+					writer.println(orderedCandidate.get(i) + ",-1");
+				}
 			}
-			else{
-				System.out.println(orderedCandidate.get(i) + ",-1");
-			}
+			writer.close();
+		} catch(IOException e){
+			System.exit(1);
 		}
 	}
 
@@ -54,6 +74,12 @@ class MeritOrderAdmission{
 		return programMap.get(program.getProgramID());
 	}
 
+	/**
+	* Checks if a DS Applicant gets an institute seat
+	* @param instiID ID of the institute whose program he applied in.
+	* @param applicant Candidate that applied
+	* @return boolean <code>true</code> if waitlisted else <code>false</code>
+	*/
 	public boolean checkDSApplication(String instiID, Candidate applicant){
 		if(instiSeats.get(instiID)<2){
 			instiAppliedMap.get(instiID).add(applicant);
@@ -68,7 +94,21 @@ class MeritOrderAdmission{
 		else
 			return false;
 	}
-
+	/**
+	* It does the following:
+	* <ul>
+	* 	<li>Reads all the three files and stores relevent data</li>
+	* 	<li>Starts the MeritOrderAlgorithm:
+	* 		<ol>
+	* 			<li>Firstly DS Candidates Apply</li>
+	* 			<li>(Phase-I) All the candidates except accepted DS Candidates and Foreign candidates apply</li>
+	* 			<li>dereservation of seats take place</li>
+	* 			<li>(Phase-II) All the non-seleced candidates apply except Foreign candidates</li>
+	* 			<li>Foreign Candidates apply</li>
+	* 		</ol></li>
+	* 	<li>Prints the result</li>
+	* </ul>
+	*/
 	public void startAlgorithm()
 	{
 		
@@ -77,16 +117,12 @@ class MeritOrderAdmission{
 		String programName;
 		String instiCode;
 		int ge,obc,sc,st,ge_pd,obc_pd,sc_pd,st_pd;
-		//ArrayList<VirtualProgramme> tempVirtualProgrammeList;
 		try{
-		 Scanner sb = new Scanner(new File("programs.csv")).useDelimiter(",|\n");
-		//fstream inProgrammes("programs.csv" , ios::in);	/** create proper file stream object */
-		//inProgrammes>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage;
+		 Scanner sb = new Scanner(new File("./test-cases/11/programs.csv")).useDelimiter(",|\n");
 		garbage = sb.next();garbage = sb.next();garbage = sb.next();garbage = sb.next();garbage = sb.next();garbage = sb.next();
 		garbage = sb.next();garbage = sb.next();garbage = sb.next();garbage = sb.next();garbage = sb.next();
 		while(sb.hasNext())
 		{
-	  	//	inProgrammes>>garbage>>programCode>>programName>>ge>>obc>>sc>>st>>ge_pd>>obc_pd>>sc_pd>>st_pd;
 	  		garbage = sb.next();
 	  		programCode = sb.next();
 	  		instiCode = programCode.substring(0,1);
@@ -110,11 +146,10 @@ class MeritOrderAdmission{
 			programMap.get(programCode).add(new VirtualProgramme("OBC_PD",true,obc_pd,programCode,instiCode));
 			programMap.get(programCode).add(new VirtualProgramme("SC_PD",true,sc_pd,programCode,instiCode));
 			programMap.get(programCode).add(new VirtualProgramme("ST_PD",true,st_pd,programCode,instiCode));
-			//programMap.put(programCode);
 
 		}
 		sb.close();
-		} catch(FileNotFoundException e){
+		} catch(IOException e){
 			System.exit(1);
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,13 +157,10 @@ class MeritOrderAdmission{
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/** To Read in the candidate list and their choices */
 		try{
-		 Scanner s = new Scanner(new File("choices.csv")).useDelimiter(",|\n");
-		//fstream inChoices("choices.csv" , ios::in); /** create proper file stream object */
-		//inChoices>>garbage>>garbage>>garbage>>garbage;	/** reading in the first line which contains the field names */
+		 Scanner s = new Scanner(new File("./test-cases/11/choices.csv")).useDelimiter(",|\n");
 		 garbage = s.next();garbage = s.next();garbage = s.next();garbage = s.next();
 		while(s.hasNext())				/** Write the correct syntax for reading in from the files */
 		{
-			//inChoices>>tempId>>tempCategory>>tempPDStatus>>tempChoices;
 			tempId = s.next();
 			tempCategory = s.next();
 			tempPDStatus = s.next();
@@ -150,16 +182,10 @@ class MeritOrderAdmission{
 			
 			Candidate tempCandidate = new Candidate(tempId,tempCategory,booleanTempPDStatus,booleanTempDSStatus,booleanTempNationality);
 			orderedCandidate.add(tempId);
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//Added loop for adding preferencelist but not sure if it will work as i am using its member function inside its constructor
-			//@anmol: maybe we can do this in galeshapley
 			String[] choices = tempChoices.split("_");
 			for(int i=0;i<choices.length;i++){
-				//VirtualProgramme tempProg = new VirtualProgramme(tempChoice,pdStatus,/*@anmol: I need qouta over here. You have not read it in GaleShapley currently*/);
 				tempCandidate.addPreference_task2(programMap.get(choices[i]));
 			}
-			//I think we should read the programme file before student choice file then we can directly get it from programme map
-			////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if(booleanTempNationality && !tempCategory.equals("DS"))
 				tempCandidate.setWaitListedFor(tempCandidate.getChoice(0));
 			if(!booleanTempNationality)
@@ -167,20 +193,18 @@ class MeritOrderAdmission{
 			candidateMap.put(tempId, tempCandidate);
 		}
 		s.close();
-		} catch(FileNotFoundException e){
+		} catch(IOException e){
 			System.exit(1);
 		}
 
 
 /** To read in the rank list of candidates and create the merit lists of different categories */
 		try{
-			Scanner sd = new Scanner(new File("ranklist.csv")).useDelimiter(",|\n");
+			Scanner sd = new Scanner(new File("./test-cases/11/ranklist.csv")).useDelimiter(",|\n");
 		
-		//fstream inRankList("ranklist.csv" , ios::in);
 		String tempId;
 		int tempGender,tempCML,tempCML_PD;
 		int[] tempRank = new int[8];
-		//inRankList>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage>>garbage;
 		garbage = sd.next();garbage = sd.next();garbage = sd.next();garbage = sd.next();garbage = sd.next();
 		garbage = sd.next();garbage = sd.next();garbage = sd.next();garbage = sd.next();garbage = sd.next();
 		garbage = sd.next();garbage = sd.next();
@@ -211,12 +235,10 @@ class MeritOrderAdmission{
 					candidateMap.get(tempId).setCategory("GE");
 				String[] choices = dsChoice.get(tempId).split("_");
 				for(int i=0;i<choices.length;i++){
-					//VirtualProgramme tempProg = new VirtualProgramme(tempChoice,pdStatus,/*@anmol: I need qouta over here. You have not read it in GaleShapley currently*/);
 					candidateMap.get(tempId).addPreference_task2(programMap.get(choices[i]));
 				}
 				candidateMap.get(tempId).setWaitListedFor(candidateMap.get(tempId).getDSChoice(0));
 			}
-		//	System.out.println(candidateMap.get(tempId).getUniqueID() + " " + candidateMap.get(tempId).getAppliedUpto() + " CAT" );
 
 	  		if(tempRank[0] != 0)
 			{
@@ -273,14 +295,12 @@ class MeritOrderAdmission{
 			categoryList[i].sortList();
 			commonMeritList.appendList(categoryList[i].getRankList());
 		}
-		//for(int i=0;i<commonMeritList.getRankList().size();i++)
-		//		System.out.println(commonMeritList.getRankList().get(i).getUniqueID() + " " + commonMeritList.getRankList().get(i).getAppliedUpto() + " CML" );
 
 		dsMeritList.sortList();
 		fMeritList.sortList();
 		
 		sd.close();
-		} catch(FileNotFoundException e){
+		} catch(IOException e){
 			System.exit(1);
 		}
 		//All merit lists checked
@@ -300,10 +320,9 @@ class MeritOrderAdmission{
 		for (ListIterator<Candidate> currentPointer = dsMeritList.getRankList().listIterator(); currentPointer.hasNext(); )
 		{
 			Candidate current = currentPointer.next();
-			//System.out.println(getCandidate(current).getUniqueID() + " " + getCandidate(current).getAppliedUpto() + " DS" );
 
 			while(!getCandidate(current).isWaitListedFor() && getCandidate(current).getAppliedUpto()!=-1){
-				if(checkDSApplication(getCandidate(current).currentDSVirtualProgramme().getInstiID(),current)){
+				if(checkDSApplication(getCandidate(current).currentDSVirtualProgramme().getInstiID(),current) && getCandidate(current).currentDSVirtualProgramme().getQuota()>0){
 					getCandidate(current).setWaitListedForBool(true);
 					getCandidate(current).setWaitListedFor(current.currentDSVirtualProgramme());
 					break;
@@ -319,21 +338,15 @@ class MeritOrderAdmission{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			/******************************************************************Phase-1***************************************************************************/
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/*for (Map.Entry<String , Candidate> entry : candidateMap.entrySet())
-			{
-				System.out.println(entry.getKey() + " " + entry.getValue().getAppliedUpto() + " CMAP");
-			}*/
+
 		for (ListIterator<Candidate> currentPointer = commonMeritList.getRankList().listIterator(); currentPointer.hasNext(); )
 		{
 			Candidate current = currentPointer.next();
 			getCandidate(current).setAppliedUpto(0);
-			//System.out.println(getCandidate(current).getUniqueID() + " " + getCandidate(current).getAppliedUpto());
 			while(!getCandidate(current).isWaitListedFor() && getCandidate(current).getAppliedUpto()!=-1 && getCandidate(current).getNationality()){
 				if(getProgram(getCandidate(current).currentVirtualProgramme()).get(getCandidate(current).currentVirtualProgramme().getMeritListIndex()).checkApplication(current)){
 					getCandidate(current).setWaitListedForBool(true);
 					getCandidate(current).setWaitListedFor(current.currentVirtualProgramme());
-					//System.out.println(getCandidate(current).getUniqueID() + " " + getCandidate(current).getAppliedUpto());
-
 					currentPointer.remove();
 					break;
 				}
@@ -350,6 +363,8 @@ class MeritOrderAdmission{
 		for (Map.Entry<String , ArrayList<VirtualProgramme> > entry : programMap.entrySet())
 		{
 			entry.getValue().get(0).dereserveSeats(entry.getValue());
+			entry.getValue().get(2).dereserveSeats(entry.getValue());
+			entry.getValue().get(3).dereserveSeats(entry.getValue());
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
